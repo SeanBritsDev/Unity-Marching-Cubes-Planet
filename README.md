@@ -1,11 +1,15 @@
 # Unity-Marching-Cubes-Planet
-This is a Unity Project, where I use the marching cubes algorithm to generate a sphere, and some caves. 
+This is a Unity Project, where I use the marching cubes algorithm to generate a sphere.
 
 Just add the marching cubes script to a game object. Make sure to add a mesh renderer and mesh filter. 
 
-The script will use the table script to generate the corect triangles. I am awair that anything above a radius of 18 is a little broken, and the caves are also not working properly, but I feel that this is good enough to get anyone started on a marching cubes planet project.
-![Screenshot (21)](https://github.com/SeanBritsDev/Unity-Marching-Cubes-Planet/assets/75024209/623199ee-b0e3-4bea-b3ce-79c9f98b8b9b)
-![Screenshot (20)](https://github.com/SeanBritsDev/Unity-Marching-Cubes-Planet/assets/75024209/0637034d-4c2e-44b1-a365-6a028d748a70)
+The script will use the table script to generate the corect triangles. There will be some smoothing to make the sphere look a little better.
+
+Normal Sphere
+![Screenshot 2024-05-04 143720](https://github.com/SeanBritsDev/Unity-Marching-Cubes-Planet/assets/75024209/46310531-8e13-454f-931f-549809a0e048)
+
+X-Ray of Sphere
+![Screenshot 2024-05-04 143901](https://github.com/SeanBritsDev/Unity-Marching-Cubes-Planet/assets/75024209/d883a12f-e7e9-4f3f-b610-2d04fc484b8e)
 
 
 I have included a mesh generation scrip whice you can attach to a game object to generate a 2D mesh of sorts. I then play with the heights to make an interesting terain. 
