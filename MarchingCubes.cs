@@ -9,9 +9,12 @@ public class MarchingCubesPlanet : MonoBehaviour
     [SerializeField] private float planetRadius = 15f; // The radius of the planet
     [SerializeField] private float resolution = 1f; // The resolution of the grid
     [SerializeField] private float heightThreshold = 0.5f; // Threshold for determining terrain height
+    [SerializeField] private float maxMountainHeight = 5f; // Maximum height of mountains above the radius
+    [SerializeField] private float maxValleyDepth = 2f; // Maximum depth of valleys below the radius
     [SerializeField] private bool visualizeNoise; // Toggle to visualize the noise
     [SerializeField] private bool xRayOn = false; // Toggle to reverse triangle winding order
     [SerializeField] private Vector3 position = Vector3.zero; // Position of the planet
+    [SerializeField] private int seed = 123; // Seed for generating noise
 
     private List<Vector3> vertices = new List<Vector3>(); // List to store generated vertices
     private List<int> triangles = new List<int>(); // List to store generated triangles
@@ -35,7 +38,7 @@ public class MarchingCubesPlanet : MonoBehaviour
     private void GeneratePlanet()
     {
         transform.position = position; // Move the entire planet to the specified position
-        SetHeights(); // Calculate heights of grid points
+        SetHeights(); // Calculate heights of grid points using noise
         MarchCubes(); // Generate mesh using marching cubes algorithm
         SetMesh(); // Set generated mesh to MeshFilter component
     }
@@ -55,7 +58,7 @@ public class MarchingCubesPlanet : MonoBehaviour
     }
 
 
-    // Method to calculate heights of grid points
+    // Method to calculate heights of grid points using multiple layers of Perlin noise
     private void SetHeights()
     {
         heights = new float[planetGridLength + 1, planetGridLength + 1, planetGridLength + 1]; // Initialize heights array
@@ -72,10 +75,21 @@ public class MarchingCubesPlanet : MonoBehaviour
                     Vector3 worldPos = new Vector3(x * resolution, y * resolution, z * resolution) - centerOffset + position; // Adjust position
                     float distanceToCenter = Vector3.Distance(worldPos, position);
 
+                    // Generate multiple layers of noise values in different directions
+                    float noiseValueX = Mathf.PerlinNoise((worldPos.x + seed) * 0.1f, (worldPos.y + seed) * 0.1f);
+                    float noiseValueY = Mathf.PerlinNoise((worldPos.y + seed) * 0.1f, (worldPos.z + seed) * 0.1f);
+                    float noiseValueZ = Mathf.PerlinNoise((worldPos.z + seed) * 0.1f, (worldPos.x + seed) * 0.1f);
+
+                    // Combine noise values to create a more natural terrain
+                    float combinedNoise = (noiseValueX + noiseValueY + noiseValueZ) / 3f;
+
+                    // Calculate height based on combined noise and sine wave
+                    float height = planetRadius + Mathf.Lerp(-maxValleyDepth, maxMountainHeight, combinedNoise) + Mathf.Sin(distanceToCenter * 0.1f) * maxMountainHeight * 0.2f;
+
                     // Check if the point is inside the planet's sphere
-                    if (distanceToCenter <= planetRadius)
+                    if (distanceToCenter <= height)
                     {
-                        heights[x, y, z] = planetRadius; 
+                        heights[x, y, z] = height;
                     }
                     else
                     {
@@ -85,6 +99,10 @@ public class MarchingCubesPlanet : MonoBehaviour
             }
         }
     }
+
+
+
+
 
     // Method to generate mesh using marching cubes algorithm
     private void MarchCubes()
@@ -181,6 +199,7 @@ public class MarchingCubesPlanet : MonoBehaviour
         }
     }
 
+
     // Method to interpolate vertex position based on neighboring vertices
     private Vector3 InterpolateVertexPosition(Vector3 edgeStart, Vector3 edgeEnd, float edgeStartValue, float edgeEndValue, float threshold)
     {
@@ -245,7 +264,8 @@ public class MarchingCubesPlanet : MonoBehaviour
                     }
                     else
                     {
-                        Gizmos.color = new Color(heights[x, y, z], heights[x, y, z], heights[x, y, z]);
+                        float noiseValue = Mathf.PerlinNoise(worldPos.x * 0.1f, worldPos.y * 0.1f + seed);
+                        Gizmos.color = new Color(noiseValue, noiseValue, noiseValue);
                     }
 
                     Gizmos.DrawSphere(worldPos, 0.2f * resolution); // Draw sphere to visualize noise
